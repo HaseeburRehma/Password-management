@@ -1,9 +1,29 @@
+<!-- Server settings
+$mail = new PHPMailer;
+$mail->isSMTP();
+$mail->SMTPDebug = 2; // Enable verbose debug output
+$mail->Host = 'smtp.gmail.com';
+$mail->SMTPAuth = true;
+$mail->Username = 'jhaseeb718@gmail.com';
+$mail->Password = 'ganl vutw ymhd jrac';
+$mail->SMTPSecure = 'tls';
+$mail->Port = 587;
+
+// Recipients
+$mail->setFrom('jhaseeb718@gmail.com', 'Password Vault');
+$mail->addAddress($email); -->
+
+
 <?php
 require 'connection.php';
 require 'vendor/autoload.php';
+require 'mailer/phpmailer.php';
+require 'mailer/credential.php';
+require 'mailer/Exception.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+
 
 try {
     $pdo = new PDO("mysql:host=localhost;dbname=password_vault", "root", "");
@@ -33,38 +53,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Prepare and send the email using PHPMailer
         $mail = new PHPMailer(true);
         try {
-            // Server settings
-            $mail->SMTPDebug = 2; // Enable verbose debug output
-            $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = 'jhaseeb718@gmail.com';
-            $mail->Password = 'ganl vutw ymhd jrac';
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = 587;
 
-            // Recipients
-            $mail->setFrom('jhaseeb718@gmail.com', 'Password Vault');
+            $mail->isSMTP();
+            $mail->SMTPDebug = 0;
+            $mail->CharSet = 'UTF-8';
+            $mail->Host = 'smtp.office365.com';
+            $mail->Port = 587;
+            $mail->SMTPSecure = 'tls';
+            $mail->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
+            $mail->SMTPAuth = true;
+            $mail->Username = EMAIL;
+            $mail->Password = PASS;
+            $mail->setFrom(EMAIL, 'ENCS Networks');
             $mail->addAddress($email);
+            $mail->isHTML(true);
 
             // Content
-            $notereceivingLink = 'http://localhost/passwordvault/notereceiving.php?';
-            $mail->isHTML(true);
+            $notereceivingLink = 'http://localhost/passwordvault/notereceiving.php';
             $mail->Subject = 'Shared Note';
             $mail->Body = 'A note has been shared with you. <br><br>' .
                 'Click <a href="' . $notereceivingLink . '">here</a> to view the note.<br><br>' .
                 'Your unique identifier is: ' . $uniqueIdentifier;
 
-
-
             // Send the email
             $mail->send();
-            $_SESSION['success_message'] = "Data shared successfully and email sent.";
+            $_SESSION['success_message'] = "Note is shared successfully and email is sent.";
         } catch (Exception $e) {
-            $_SESSION['success_message'] = "Data shared successfully but email could not be sent. Mailer Error: {$mail->ErrorInfo}";
+            $_SESSION['success_message'] = "Note is shared successfully but email could not be sent. Mailer Error: {$mail->ErrorInfo}";
             error_log("Mailer Error: " . $mail->ErrorInfo); // Log the error for debugging
         }
-
 
         header("Location: " . $_SERVER['REQUEST_URI']);
         exit();
@@ -75,193 +98,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 
-
-<!--
-<!DOCTYPE html>
-<html lang="en">
-<title>ENCS</title>
-<link rel="shortcut icon" href="dist/img/encs-logo.png">
-
-
-<body class="hold-transition sidebar-mini layout-fixed">
-
-
-    <div class="wrapper">
-
-<div class="preloader flex-column justify-content-center align-items-center">
-    <img class="animation__shake" src="dist/img/encs-loader.png" alt="AdminLTELogo" height="60" width="60">
-</div>
-
-
-<section id="header">
-    <div class="mainheader">
-        <a href="#" class="brand-link">
-            <img src="dist/img/vault.png" alt="AdminLTE Logo" class="rounded-circle"
-                style="width: 90px; height: 90px; margin-top: -3px;">
-            <span class="brand-text text-white" style="font-size: 18px;">ENCS Password Vault</span>
-        </a>
-    </div>
-</section>
-<div class="content-wrapper">
-
-
-
-    <form method="POST" action="">
-        <style type="text/css">
-            .alert-success {
-                color: #155724;
-                background-color: #d4edda;
-                border-color: #c3e6cb;
-            }
-
-            .alert-danger {
-                color: #721c24;
-                background-color: #f8d7da;
-                border-color: #f5c6cb;
-            }
-
-            .mainheader {
-                background-color: #343a40;
-                color: #ffffff;
-                padding: 8px;
-                width: 100%;
-            }
-
-            .main-header .brand-link {
-                color: #ffffff;
-            }
-
-
-
-            .wrapper {
-                display: flex;
-                flex-direction: column;
-                height: 100vh;
-                width: 100%;
-            }
-
-            .content-wrapper {
-                display: flex;
-                flex-direction: column;
-                flex: 1;
-                padding: 0 15px;
-            }
-
-            .form-wrapper {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                margin-top: 24px;
-                height: 100%;
-            }
-
-            .main-header .container-fluid {
-                padding-left: auto;
-                padding-right: auto;
-            }
-
-            .content {
-                flex: 2;
-            }
-
-
-            .card {
-                width: 100%;
-                max-width: 400px;
-
-            }
-        </style>
-        <section class="content" style="margin-left: 130px;">
-            <div class="container-fluid">
-                <div class="alert alert-success" id="successMessage" style="display: none;">
-                    Note is shared successfully!
-                </div>
-
-                <?php echo (isset($_SESSION['shared_success'])) ? '<div id="alertDiv" class="alert alert-success alert-dismissible fade show" role="alert">' . $_SESSION['success_message'] . '<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
-    </button></div>' : ''; ?>
-                <div class="row">
-                    <div class="col-md-10 mb-2">
-                        <div class="card card-info">
-                            <div class="card-header text-center">
-                                <h3 class="card-title"> Shared Notes</h3>
-                            </div>
-                            <div class="card-body">
-
-
-
-                                <div class="form-group">
-                                    <label for="email">Recipient Email</label>
-                                    <input type="email" class="form-control" id="email" name="email" required>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="description">Description</label>
-                                    <textarea class="form-control" id="description" name="description" rows="3"
-                                        required></textarea>
-                                </div>
-
-                                <div class="form-group  text-left">
-                                    <button type="submit" class="btn btn-primary " id="shareButton">Share
-                                        Note</button>
-                                </div>
-
-                            </div>
-
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-    </form>
-
-
-</div>
-</div>
-
-
-
-
-
-
-</div>
-
-</div>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        var shareButton = document.getElementById("shareButton");
-        var successMessage = document.getElementById("successMessage");
-
-        shareButton.addEventListener("click", function () {
-            successMessage.style.display = "block";
-
-            setTimeout(function () {
-                successMessage.style.display = "none";
-
-                setTimeout(function () {
-                    window.location.reload();
-                }, 10000);
-            }, 3000);
-        });
-    });
-
-
-</script>
-
-</div>
-</section>
-</div>
-
-
-
-
-
-</body>
-
-</html>
--->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -345,6 +181,62 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         color: #999;
     }
 
+    .form-title {
+        font-family: Poppins-Bold;
+        font-size: 24px;
+        color: #fff;
+        line-height: 1.2;
+        text-align: center;
+
+        width: 100%;
+        display: block;
+        padding-bottom: 54px;
+        /* background-image: url("dist/img/encs-logo.png");
+        background-color: #fff;
+        background-size: contain;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent; */
+
+    }
+
+    #letter-orange {
+        color: #f58634;
+    }
+
+    #letter-lightblue {
+        color: #5881c3;
+    }
+
+    #letter-yellow {
+        color: #fd6349;
+    }
+
+    #letter-green {
+        color: #0a7740;
+    }
+
+    @keyframes fadeIn {
+        0% {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 1s ease-in-out;
+    }
+
+    .word {
+        display: inline-block;
+        opacity: 0;
+        transition: opacity 0.5s, transform 0.5s;
+    }
+
     @keyframes flash {
         0% {
             background-color: transparent;
@@ -369,14 +261,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="limiter">
         <div class="container-login100">
             <div class="wrap-login100">
-                <div class="login100-pic js-tilt" data-tilt>
+                <div class="login100-pic js-tilt" style=" width: 400px; height: auto;" data-tilt>
                     <img src="dist/img/vault.png" alt="IMG">
                 </div>
                 <div id="formCard">
+
                     <form class="login100-form validate-form" method='post'>
-                        <span class="login100-form-title">
-                            ENCS Networks <br> Note Sharing
+
+                        <span id="formTitle" class="form-title">
+                            <span id="letter-orange" class="word">E</span>
+                            <span id="letter-lightblue" class="word">N</span>
+                            <span id="letter-yellow" class="word">C</span>
+                            <span id="letter-green" class="word">S</span>
+                            <span class="word">Networks</span><br>
+                            <span class="word">Note</span>
+                            <span class="word">Sharing</span>
                         </span>
+
                         <?php
                         // Check if success message is set in session and display it
                         if (isset($_SESSION['success_message'])) {
@@ -434,14 +335,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     </div>
 
-    <!--===============================================================================================-->
     <script src="Login/vendor/jquery/jquery-3.2.1.min.js"></script>
-    <!--===============================================================================================-->
+
     <script src="Login/vendor/bootstrap/js/popper.js"></script>
     <script src="Login/vendor/bootstrap/js/bootstrap.min.js"></script>
-    <!--===============================================================================================-->
+
     <script src="Login/vendor/select2/select2.min.js"></script>
-    <!--===============================================================================================-->
+
     <script src="Login/vendor/tilt/tilt.jquery.min.js"></script>
     <script>
         $('.js-tilt').tilt({
@@ -452,11 +352,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             document.getElementById('alertDiv').style.display = 'none';
             history.replaceState(null, null, window.location.pathname);
         }, 3000);
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var formTitle = document.getElementById('formTitle');
+            var words = formTitle.querySelectorAll('.word');
+
+            // Trigger animation for each word with a delay
+            words.forEach(function (word, index) {
+                setTimeout(function () {
+                    word.style.opacity = 1;
+                    word.classList.add('animate-fade-in');
+                }, index * 500);
+            });
+        });
     </script>
 
 
 
-    <!--===============================================================================================-->
+
     <script src="Login/js/main.js"></script>
 
 
