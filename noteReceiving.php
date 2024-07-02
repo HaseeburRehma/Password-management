@@ -13,7 +13,7 @@ try {
     exit();
 }
 
-$error = '';
+//$error = '';
 $note = null;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -43,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $updateStmt->execute(['id' => $note['id']]);
         }
     } else {
+
         $error = 'No note found with the provided credentials.';
     }
 }
@@ -134,6 +135,64 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         background-color: #f8d7da;
         color: #721c24;
     }
+
+    .form-title {
+        font-family: Poppins-Bold;
+        font-size: 24px;
+        color: #fff;
+        line-height: 1.2;
+        text-align: center;
+
+        width: 100%;
+        display: block;
+        padding-bottom: 54px;
+        /*
+        background-image: url("dist/img/encs-logo.png");
+        background-color: #fff;
+        background-size: contain;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        */
+
+    }
+
+    #letter-orange {
+        color: #f58634;
+    }
+
+    #letter-lightblue {
+        color: #5881c3;
+    }
+
+    #letter-yellow {
+        color: #fd6349;
+    }
+
+    #letter-green {
+        color: #0a7740;
+    }
+
+    @keyframes fadeIn {
+        0% {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 1s ease-in-out;
+    }
+
+    .word {
+        display: inline-block;
+        opacity: 0;
+        transition: opacity 0.5s, transform 0.5s;
+    }
 </style>
 
 <body>
@@ -147,11 +206,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 <form class="login100-form validate-form" method='post' id="formCard"
                     style="<?php echo $note ? 'display:none;' : ''; ?>">
-                    <span class="login100-form-title">
-                        ENCS Networks <br> Note Sharing
+                    <span id="formTitle" class="form-title">
+                        <span id="letter-orange" class="word">E</span>
+                        <span id="letter-lightblue" class="word">N</span>
+                        <span id="letter-yellow" class="word">C</span>
+                        <span id="letter-green" class="word">S</span>
+                        <span class="word">Networks</span><br>
+                        <span class="word">Note</span>
+                        <span class="word">Receiving</span>
                     </span>
-                    <?php echo (isset($error)) ? "<div id='errorDiv' class='alert alert-danger'>" . htmlspecialchars($error) . "</div>" : ""; ?>
 
+                    <?php if (isset($error)): ?>
+                        <div id="errorDiv" class="alert alert-danger">
+                            <?php echo htmlspecialchars($error); ?>
+                        </div>
+                    <?php endif; ?>
 
                     <div class="wrap-input100 validate-input" data-validate="email is required">
                         <input class="input100" type="email" name="recipient_email" placeholder="User Email">
@@ -187,16 +256,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <form class="login100-form validate-form" id="notedetail" method=''>
                     <?php if ($note && $note['status'] !== 'read'): ?>
 
-                        <span class="login100-form-title">
-                            ENCS Networks <br> Note Details
+                        <span id="formTitle" class="form-title">
+                            <span id="letter-orange" class="word">E</span>
+                            <span id="letter-lightblue" class="word">N</span>
+                            <span id="letter-yellow" class="word">C</span>
+                            <span id="letter-green" class="word">S</span>
+                            <span class="word">Networks</span><br>
+                            <span class="word">Note</span>
+                            <span class="word">Receiving</span>
                         </span>
 
                         <div class="wrap-input100 validate-input">
+                            <label style="color: white;">Sender Name</label>
                             <input class="input100" type="text" name="senderName"
                                 value="<?php echo htmlspecialchars($note['sender_name']); ?>" readonly>
                             <span class="focus-input100"></span>
                             <span class="symbol-input100">
-                                <i class="fa fa-user" aria-hidden="true"></i>
+                                <i class="fa fa-user" style="margin-top: 28px;margin-inline: -4px" aria-hidden="true"></i>
                             </span>
                         </div>
 
@@ -257,10 +333,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             scale: 1.1
         })
 
-        setTimeout(function () {
-            document.getElementById('errorDiv').style.display = 'none';
-            history.replaceState(null, null, window.location.pathname);
-        }, 3000);
+        if (document.getElementById('errorDiv')) {
+            setTimeout(function () {
+                document.getElementById('errorDiv').style.display = 'none';
+                history.replaceState(null, null, window.location.pathname);
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var formTitle = document.getElementById('formTitle');
+            var words = formTitle.querySelectorAll('.word');
+
+            // Trigger animation for each word with a delay
+            words.forEach(function (word, index) {
+                setTimeout(function () {
+                    word.style.opacity = 1;
+                    word.classList.add('animate-fade-in');
+                }, index * 500);
+            });
+        });
     </script>
     <!--===============================================================================================-->
     <script src="Login/js/main.js"></script>
